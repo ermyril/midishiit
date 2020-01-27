@@ -1,6 +1,6 @@
 #define CH 1
 #define LED_PIN 13
-#define MAX_LED_PIN_TIME 200
+#define MAX_LED_PIN_TIME 200 
 #define PEDAL_MARGIN 64
 
 /* MIDIUSB */
@@ -26,12 +26,11 @@ int btNote[] = {61, 60, 69, 74, 79, 84}; //NOTE NUMBER
 int btCC[]   = {21, 22, 23, 24, 25, 26}; //CC NUMBER //
 int switchPreVal[] = { -1, -1, -1, -1, -1, -1 };
 int switchStatus[] = {1, 1, 1, 1, 1, 1};
-int pedalPin = 0;
-int pedalCC = 4;
-int pedalPreVal = -1;
-int ledPinTime = 0;
-int ccToggleDelay = 200;
 
+int ledState = HIGH;
+
+unsigned long lastDebounceTime = 0;
+unsigned long debounceDelay = 50;
 
 void setup() {
     Serial.begin(115200); //MIDIUSB
@@ -50,24 +49,35 @@ void loop() {
         int val = digitalRead(switchPins[i]);
 
         if (val != switchPreVal[i]) {
-            switchPreVal[i] = val;
-            digitalWrite(LED_PIN, HIGH);
-            ledPinTime = MAX_LED_PIN_TIME;
-            switchStatus[i] = !switchStatus[i];
-
-            if (switchStatus[i] == true) {
-                noteOn(0, btNote[i], 127);  // channel, pitch, velocity
-                controlChange(0, btCC[i], 127); //channel, CC#, value
-                MidiUSB.flush();
-                
-            } else {
-                noteOff(0, btNote[i], 127);  // channel, pitch, velocity
-                controlChange(0, btCC[i], 0); //channel, CC#, value
-                MidiUSB.flush();
- 
-            }
-
+            lastDebounceTime = millis();
         }
 
+        if ((millis() - lastDebounceTime) > debounceDelay) {
+            
+        
+        
+            if (val != switchStatus[i]) {
+                //switchPreVal[i] = val;
+                //ledState = !ledState;
+    
+                
+      
+                  switchStatus[i] = val;
+      
+                  if (switchStatus[i] == true) {
+                      noteOn(0, btNote[i], 127);  // channel, pitch, velocity
+                      controlChange(0, btCC[i], 127); //channel, CC#, value
+                      MidiUSB.flush();
+                      
+                  } else {
+                      noteOff(0, btNote[i], 127);  // channel, pitch, velocity
+                      controlChange(0, btCC[i], 0); //channel, CC#, value
+                      MidiUSB.flush();
+       
+                  }
+      
+              }
+        }
+        switchPreVal[i] = val;
     }
 }
