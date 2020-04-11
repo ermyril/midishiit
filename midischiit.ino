@@ -27,6 +27,10 @@ int btCC[]   = {21, 22, 23, 24, 25, 26}; //CC NUMBER //
 int switchPreVal[] = { -1, -1, -1, -1, -1, -1 };
 int switchStatus[] = {1, 1, 1, 1, 1, 1};
 
+// https://help.ableton.com/hc/en-us/articles/209774945--Toggle-and-Momentary-MIDI-functions-in-Live
+int isSwitchToggle[] = {1, 1, 1, 1, 1, 1};
+int togglesState[] = {0, 0, 0, 0, 0, 0};
+
 int ledState = HIGH;
 
 unsigned long lastDebounceTime = 0;
@@ -44,6 +48,20 @@ void setup() {
 
 
 void loop() {
+//    Serial.println("--------------------------------------");
+//    Serial.println();
+//    Serial.print("current switchStatus - ");
+//    for (int i=0; i<4; i++) {
+//      Serial.print(switchStatus[i]);
+//      Serial.print(", ");
+//    }
+//    Serial.print("current readings - ");
+//    for (int i=0; i<4; i++) {
+//      Serial.print(digitalRead(switchPins[i]));
+//      Serial.print(", ");
+//    }
+//    Serial.println();
+        
     for (int i = 0; i < 4; i++) {
 
         int val = digitalRead(switchPins[i]);
@@ -57,25 +75,35 @@ void loop() {
         
         
             if (val != switchStatus[i]) {
-                //switchPreVal[i] = val;
-                //ledState = !ledState;
-    
                 
-      
-                  switchStatus[i] = val;
-      
                   if (switchStatus[i] == true) {
                       noteOn(0, btNote[i], 127);  // channel, pitch, velocity
                       controlChange(0, btCC[i], 127); //channel, CC#, value
+                      
+                      if (isSwitchToggle[i] == true) {
+                        Serial.println(togglesState[i] * 127);
+                        controlChange(0, btCC[i], !togglesState[i] * 127); //channel, CC#, value
+                        togglesState[i] = !togglesState[i];
+                      } else {
+                        controlChange(0, btCC[i], 127); //channel, CC#, value
+                      }
+                      
                       MidiUSB.flush();
+                      //Serial.println("note on");
                       
                   } else {
                       noteOff(0, btNote[i], 127);  // channel, pitch, velocity
-                      controlChange(0, btCC[i], 0); //channel, CC#, value
+
+                      if (isSwitchToggle[i] == false) {
+                        controlChange(0, btCC[i], 0); //channel, CC#, value
+                      }
+                      
                       MidiUSB.flush();
+                      //Serial.println("note off");
        
                   }
-      
+                  
+                  switchStatus[i] = !switchStatus[i];
               }
         }
         switchPreVal[i] = val;
