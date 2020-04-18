@@ -1,0 +1,12 @@
+{
+    "sketch": "midischiit.ino",
+    "programmer": "AVRISP mkII",
+    "board": "arduino:avr:micro",
+    "port": "/dev/tty.usbmodem14201",
+    "env": {
+        "arduino_path": "/Applications/Arduino.app/Contents/Java",
+        "arduino_avr_include_path": "${env:arduino_path}/hardware/arduino/avr",
+        "arduino_avr_include2_path": "${env:arduino_path}/hardware/tools/avr/avr/include",
+        "arduino_avr_compiler_path": "${env:arduino_path}/hardware/tools/avr/bin/avr-g++"
+    }
+}
